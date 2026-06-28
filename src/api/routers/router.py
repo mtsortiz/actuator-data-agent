@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, HTTPException
-from api.schemas import ChatRequest, ChatResponse
+from src.api.schemas.schemas import ChatRequest, ChatResponse
 
 
 router = APIRouter()
@@ -22,7 +22,7 @@ async def chat_endpoint(payload: ChatRequest):
             mock_reply = f"Hi, I received your message: '{payload.message}'. But I have not the graph connected yet"
             mock_sources = ["Database: connected"]
 
-            return ChatResponse(response=mock_reply, thread_id=current_thread_id, sources=mock_sources)
+        return ChatResponse(response=mock_reply, thread_id=current_thread_id, sources=mock_sources)
     except Exception as e:
         print(f"Error processing the request: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
