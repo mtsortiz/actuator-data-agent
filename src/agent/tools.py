@@ -99,3 +99,5 @@ def query_by_spects(
         return "No actuators found matching the specified filters."
 
     return str([dict(row) for row in rows])
+
+tools = [query_by_part_number, query_by_spects]
