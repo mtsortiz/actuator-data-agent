@@ -1,8 +1,10 @@
+import os
 import sqlite3
 from typing import Optional
 from langchain_core.tools import tool
 
-DB_PATH = "data/processed/electric_data_table.db"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DB_PATH = os.path.join(BASE_DIR, "data", "processed", "electric_data_table.db")
 
 #TOOL 1:
 @tool
