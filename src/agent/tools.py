@@ -2,9 +2,12 @@ import os
 import sqlite3
 from typing import Optional
 from langchain_core.tools import tool
+from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BASE_DIR, "data", "processed", "electric_data_table.db")
+CHROMA_DB_PATH = os.path.join(BASE_DIR, "data", "processed", "chroma_db")
 
 #TOOL 1:
 @tool
@@ -103,4 +106,26 @@ def query_by_specs(
 
     return str([dict(row) for row in rows])
 
-tools = [query_by_part_number, query_by_specs]
+
+#TOOL 3:
+@tool
+def query_business_context(query: str) -> str:
+    """
+    Queries the business context and documentation database. 
+    Use this tool when the user asks conceptual questions about enclosures (weatherproof vs explosionproof), 
+    application types (on/off vs modulating), electrical phase specifications, duty cycle ratings (S4), 
+    or any business-oriented definitions.
+    """
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    chroma_db = Chroma(persist_directory=CHROMA_DB_PATH, embedding_function=embeddings)
+    
+    #search for the 3 most relevant
+    docs = chroma_db.similarity_search(query, k=3)
+    
+    if not docs:
+        return "No relevant business context found for your query."
+
+    return "\n\n".join([doc.page_content for doc in docs])
+
+
+tools = [query_by_part_number, query_by_specs, query_business_context]
