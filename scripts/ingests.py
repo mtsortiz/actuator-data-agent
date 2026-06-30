@@ -106,4 +106,5 @@ def main_chroma():
     save_summary_to_chroma(file_path_summary)
 
 if __name__ == "__main__":
+    main_sqlite()
     main_chroma()
