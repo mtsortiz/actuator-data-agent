@@ -2,7 +2,7 @@ import os
 import sqlite3
 from typing import Optional
 from langchain_core.tools import tool
-from langchain_chroma import Chroma
+from langchain_chroma.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
