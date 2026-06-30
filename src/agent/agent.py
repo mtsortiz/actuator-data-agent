@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
-from src.agent.tools import tools
+from agent.tools import tools
 from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv()
