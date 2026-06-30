@@ -2,14 +2,19 @@ import os
 import json
 import sqlite3
 import pandas as pd
+import pdfplumber
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from langchain_chroma import Chroma, chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 
 load_dotenv()
 client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
-file_path = "data/raw/series_76_tables.pdf"
-
+file_path_tables = "data/raw/series_76_tables.pdf"
+file_path_summary = "data/raw/series_76_summary.pdf"
 
 def upload_pdf(file_path):
     file_ref = client.files.upload(file=file_path)
@@ -58,8 +63,30 @@ def save_to_sqlite(df, db_path):
     df.to_sql("electric_data_table", conn, if_exists="replace", index=False)
     conn.close()
 
+
+def save_summary_to_chroma(file_path_summary):
+    #Extract
+    text = ""
+    with pdfplumber.open(file_path_summary) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() + "\n"
+
+    #Chunking with 500 chuksize
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500, 
+        chunk_overlap=50)
+    docs = text_splitter.create_documents([text])
+
+    #Embeddings
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+    #ChromaDB
+    Chroma.from_documents(docs, embeddings, persist_directory="data/processed/chroma_db")
+
+
+
 def main():
-    file_ref = upload_pdf(file_path)
+    file_ref = upload_pdf(file_path_tables)
     try:
         raw_json = extract_data(file_ref)
         df = clean_data(raw_json)
