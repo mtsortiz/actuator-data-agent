@@ -1,6 +1,7 @@
 import uuid
 from fastapi import APIRouter, HTTPException
-from src.api.schemas.schemas import ChatRequest, ChatResponse
+from api.schemas.schemas import ChatRequest, ChatResponse
+from agent.agent import agent
 
 
 router = APIRouter()
@@ -10,19 +11,27 @@ async def chat_endpoint(payload: ChatRequest):
     current_thread_id = payload.thread_id or str(uuid.uuid4())
 
     try:
-        #TODO: Connect the graph
-        #result = await agent_graph.ainvoke({"messages": [payload.message]}, config={"configurable":{"thread_id": current_thread_id}})
+        config={"configurable":{"thread_id": current_thread_id}}
+        result= await agent.ainvoke({"messages": [{"role": "user", "content": payload.query}]}, config=config)
 
-        #MOCK DE PRUEBA
-        user_message = payload.message.lower()
-        if "762" in user_message:
-            mock_reply = "The actuator 762 serie operates with 40 watts motor power"
-            mock_sources = ["Table: actuators"]
-        else:
-            mock_reply = f"Hi, I received your message: '{payload.message}'. But I have not the graph connected yet"
-            mock_sources = ["Database: connected"]
+        last_message = result["messages"][-1].content
+        sources=[]
 
-        return ChatResponse(response=mock_reply, thread_id=current_thread_id, sources=mock_sources)
+        for msg in reversed(result["messages"]):
+            if msg.type == "ai" and msg.tool_calls:
+                for tool_call in msg.tool_calls:
+                    sources.append(f"Tool: {tool_call['name']}")
+                break
+
+        if not sources:
+            sources.append("No tools were used in this conversation.")
+
+        return ChatResponse(
+            thread_id=current_thread_id,
+            answer=last_message,
+            sources=sources
+        )
+
     except Exception as e:
-        print(f"Error processing the request: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail=str(e))
+
