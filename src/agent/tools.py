@@ -33,7 +33,7 @@ def query_by_part_number(part_number: str) -> str:
 
 #TOOL 2:
 @tool
-def query_by_spects(
+def query_by_specs(
     enclosure_type: Optional[str] = None,
     voltage: Optional[str] = None,
     phase: Optional[str] = None,
@@ -71,8 +71,9 @@ def query_by_spects(
         params.append(voltage)
 
     if phase is not None:
-        query += ' AND "Phase" = ?'
-        params.append(phase)
+        phase_str = "Single" if str(phase) == "1" else "3 Phase"
+        query += ' AND "Phase" LIKE ?'
+        params.append(f"%{phase_str}%")
 
     if min_on_off_torque is not None:
         query += ' AND "On/Off Output Torque Nm" >= ?'
@@ -102,4 +103,4 @@ def query_by_spects(
 
     return str([dict(row) for row in rows])
 
-tools = [query_by_part_number, query_by_spects]
+tools = [query_by_part_number, query_by_specs]
