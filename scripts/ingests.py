@@ -6,7 +6,7 @@ import pdfplumber
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from langchain_chroma import Chroma, chroma
+from langchain_chroma.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -85,7 +85,7 @@ def save_summary_to_chroma(file_path_summary):
 
 
 
-def main():
+def main_sqlite():
     file_ref = upload_pdf(file_path_tables)
     try:
         raw_json = extract_data(file_ref)
@@ -101,5 +101,9 @@ def main():
             print("Temporary file deleted.")
         except Exception as e:
             print(f"Nota: No se pudo borrar el archivo en la API ({e}). Google lo limpiará automáticamente en 48hs.")
+    
+def main_chroma():
+    save_summary_to_chroma(file_path_summary)
+
 if __name__ == "__main__":
-    main()
+    main_chroma()
