@@ -14,6 +14,12 @@ app.add_middleware(
 
 app.include_router(router)
 
+@app.get("/", include_in_schema=False)
+async def root():
+    return {
+        "message": "API is running. Please go to /docs for interactive Swagger documentation."
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
