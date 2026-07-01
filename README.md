@@ -41,6 +41,13 @@ Processed outputs generated/used by the service:
 
 ## Setup Instructions
 
+### Clone Repository
+
+```bash
+git clone https://github.com/mtsortiz/actuator-data-agent.git
+cd actuator-data-agent
+```
+
 ### Prerequisites
 - Docker + Docker Compose.
 - Optional local runtime: Python 3.11 and `uv`.
@@ -61,6 +68,13 @@ Copy-Item .env.example .env
 2. Set real values in `.env`:
 - `OPENAI_API_KEY` (required for runtime embeddings/tool context retrieval).
 - `GOOGLE_API_KEY` (required only when running ingestion pipeline).
+
+### Environment Variable Reference
+
+| Variable | Required | Used for |
+|---|---|---|
+| `OPENAI_API_KEY` | Yes (runtime) | Embeddings and context retrieval used by the running API service. |
+| `GOOGLE_API_KEY` | Only for ingestion/notebooks | PDF extraction workflow (`scripts/ingests.py`) and notebook experiments. |
 
 ## Data Processing Pipeline
 
@@ -95,10 +109,37 @@ Service URL:
 - API: `http://localhost:8000`
 - Swagger docs: `http://localhost:8000/docs`
 
+Container networking note:
+- Uvicorn may log `http://0.0.0.0:8000` inside Docker. This is expected because the service binds to all container interfaces.
+- From your host machine/browser, always use `http://localhost:8000`.
+
 Stop service:
 ```bash
 docker-compose down
 ```
+
+## Quick Verification
+
+After startup, run these checks from the repository root:
+
+1. Confirm containers are running:
+```bash
+docker-compose ps
+```
+
+2. Confirm API docs are reachable:
+```bash
+curl -I "http://localhost:8000/docs"
+```
+Expected: HTTP `200 OK`.
+
+3. Send a quick conversation test:
+```bash
+curl -X POST "http://localhost:8000/api/conversation" \
+    -H "Content-Type: application/json" \
+    -d '{"query":"Which is the motor power of the actuator 765A00-11300000/A","thread_id":"session-123"}'
+```
+Expected: HTTP `200 OK` and a JSON response containing `answer`, `thread_id`, and `sources`.
 
 ## API Usage
 
