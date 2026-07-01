@@ -23,7 +23,7 @@ def query_by_part_number(part_number: str) -> str:
 
     clean_part_number = part_number.strip().replace("*", "")
 
-    query = 'SELECT * FROM electric_data_table WHERE "Base Part Number" LIKE ?'
+    query = 'SELECT * FROM electric_data_table WHERE base_part_number LIKE ?'
     cursor.execute(query, (f"%{clean_part_number}%",))
     rows = cursor.fetchall()
     conn.close()
@@ -66,33 +66,33 @@ def query_by_specs(
     params = []
 
     if enclosure_type:
-        query += ' AND "Enclosure Type" = ?'
+        query += ' AND enclosure_type = ?'
         params.append(enclosure_type)
 
     if voltage:
-        query += ' AND "Voltage" = ?'
+        query += ' AND voltage = ?'
         params.append(voltage)
 
     if phase is not None:
         phase_str = "Single" if str(phase) == "1" else "3 Phase"
-        query += ' AND "Phase" LIKE ?'
+        query += ' AND phase LIKE ?'
         params.append(f"%{phase_str}%")
 
     if min_on_off_torque is not None:
-        query += ' AND "On/Off Output Torque Nm" >= ?'
+        query += ' AND "on_off_output_torque_nm" >= ?'
         params.append(min_on_off_torque)
 
     if min_modulating_torque is not None:
-        query += ' AND "Modulating Output Torque Nm" >= ?'
+        query += ' AND "modulating_output_torque_nm" >= ?'
         params.append(min_modulating_torque)
 
     if max_speed_seconds is not None:
         # Match actuators that are equal or faster (lower seconds) than requested.
-        query += ' AND "Operating Speed (sec) 60 Hz" <= ?'
+        query += ' AND "operating_speed_60hz_sec" <= ?'
         params.append(max_speed_seconds)
 
     if motor_power is not None:
-        query += ' AND "Motor Power Watts" >= ?'
+        query += ' AND "motor_power_watts" >= ?'
         params.append(motor_power)
 
     query += " LIMIT 5"
