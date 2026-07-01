@@ -38,7 +38,6 @@ Processed outputs generated/used by the service:
 - `data/processed/electric_data_table.db`
 - `data/processed/chroma_db/`
 
-Important: processed data is already included in this repository for quick evaluation. Re-running ingestion is only needed if you want to rebuild artifacts.
 
 ## Setup Instructions
 
@@ -82,6 +81,8 @@ Run with standard Python:
 ```bash
 python scripts/ingests.py
 ```
+
+*IMPORTANT: processed data is already included in this repository for quick evaluation. Re-running ingestion is only needed if you want to rebuild artifacts.*
 
 ## How to Run (Docker)
 
@@ -193,20 +194,6 @@ curl -X POST "http://localhost:8000/api/conversation" \
 Expected:
 - HTTP `200 OK`
 - Agent response indicating no matching actuator was found.
-
-### 5. Missing OpenAI runtime key (infrastructure error case)
-Steps:
-1. Remove or empty `OPENAI_API_KEY` in `.env`.
-2. Restart service:
-```bash
-docker-compose down
-docker-compose up --build -d
-```
-3. Send a normal `/api/conversation` request.
-
-Expected:
-- HTTP `500 Internal Server Error`
-- Error detail related to missing/invalid provider configuration.
 
 
 # Design Notes: How I Built It
