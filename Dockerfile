@@ -18,4 +18,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "echo 'API available at http://localhost:8000' && uvicorn src.main:app --host 0.0.0.0 --port 8000"]
