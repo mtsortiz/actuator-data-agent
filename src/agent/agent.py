@@ -21,6 +21,7 @@ agent = create_agent(
         temperature=0.1,
     ),
     tools=tools,
+    checkpointer=memory,
     system_prompt = """
 You are the Konecto Intelligent Actuator Data Agent. Your job is to assist clients 
 in finding and specifying the correct actuator models from the Series 76 catalog.
