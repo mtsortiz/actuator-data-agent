@@ -28,6 +28,12 @@ The implementation is aligned with the assessment scenario and uses LangChain to
 - Endpoint: `POST /api/conversation`.
 - Request/response models are validated with Pydantic.
 
+
+#### Notebook note:
+- The notebooks in `notebooks/` were used for personal experiments and validation only.
+- They are not required to run the service or reproduce the main workflow.
+
+
 ## Repository Inputs and Data Files
 
 Raw files expected by the ingestion script:
