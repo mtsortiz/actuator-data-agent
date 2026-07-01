@@ -9,6 +9,7 @@ from google.genai import types
 from langchain_chroma.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from schemas import ActuatorDataSet
 
 
 load_dotenv()
@@ -38,6 +39,7 @@ Do not omit any model.
         config = types.GenerateContentConfig(
             system_instruction=system_prompt,
             response_mime_type="application/json",
+            response_schema=ActuatorDataSet,
             temperature=0.0  
         )
     )
@@ -45,17 +47,69 @@ Do not omit any model.
     return response.text
 
 
+def get_motor_power(row):
+    """
+    Determines the exact motor power in watts using the model prefix, 
+    the voltage and enclosure type.
+    """
+    model= str(row.get("base_part_number", "")).strip()
+    voltage= str(row.get("voltage", "")).strip()
+    enclosure_type= str(row.get("enclosure_type", "")).strip()
+
+    if not model or model == "None":
+        return None
+    
+    prefix = model[:4]
+
+    #Explosionproof actuators
+    if "Explosion" in enclosure_type:
+        if "761" in prefix:
+            return 15
+        elif "762" in prefix or "763" in prefix:
+            return 40
+        elif "763Y" in prefix or "764" in prefix:
+            return 90
+        elif "765" in prefix:
+            return 180
+        return None
+    
+    #Weatherproof actuators
+    else:
+        if "761" in prefix:
+            return 15
+        elif "762" in prefix or "763A" in prefix:
+            return 40
+        elif "763B" in prefix or "763C" in prefix or "763X" in prefix or "763Y" in prefix:
+            return 90
+        elif "764" in prefix or "765" in prefix:
+            return 180
+        elif "766" in prefix or "767" in prefix:
+            return 700
+        return None
+    
+
 def clean_data(raw_json_string):
     json_data = json.loads(raw_json_string)
-    df = pd.DataFrame(json_data)
+    df = pd.DataFrame(json_data["actuators"])
+
+
+    df["motor_power_watts"] = df.apply(get_motor_power, axis=1)
     
-    columns_to_drop = ['Operating Speed (sec)', 'Full Load Current (FLA) Amps', 'Locked Rotor Current (LRA) Amps']
-    existing_columns = [col for col in columns_to_drop if col in df.columns]
-    
-    if existing_columns:
-        df = df.drop(columns=existing_columns)
-    df["Motor Power Watts"] = df["Motor Power Watts"].bfill().ffill()
-        
+    numeric_columns = [
+        "on_off_output_torque_in_lbs", "on_off_output_torque_nm",
+        "on_off_duty_cycle_percent", "on_off_cycles_per_hour",
+        "modulating_output_torque_in_lbs", "modulating_output_torque_nm",
+        "modulating_duty_cycle_percent", "modulating_starts_per_hour",
+        "operating_speed_60hz_sec", "operating_speed_50hz_sec",
+        "full_load_current_60hz_amps", "full_load_current_50hz_amps",
+        "locked_rotor_current_60hz_amps", "locked_rotor_current_50hz_amps",
+        "motor_power_watts"
+    ]
+
+    for col in numeric_columns:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
     return df
 
 def save_to_sqlite(df, db_path):
