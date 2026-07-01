@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, HTTPException
-from api.schemas.schemas import ChatRequest, ChatResponse
-from agent.agent import agent
+from src.api.schemas.schemas import ChatRequest, ChatResponse
+from src.agent.agent import agent
 
 
 router = APIRouter()

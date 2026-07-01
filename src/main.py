@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers.router import router
+from src.api.routers.router import router
 
 app = FastAPI(title="Actuator Data Agent API", description="API for interacting with the Agent")
 
